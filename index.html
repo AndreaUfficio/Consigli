@@ -25,12 +25,14 @@ input, textarea{
     width: 100%;
     padding: 10px;
     margin: 10px 0;
+    box-sizing: border-box;
 }
 
 button{
     padding: 10px;
     cursor: pointer;
 }
+
 h1{text-align:center;}
 </style>
 </head>
@@ -38,22 +40,24 @@ h1{text-align:center;}
 <body>
 
 <h1>CONSIGLI</h1>
+<p style="text-align:center">Film e Album tra Andrea e Matteo</p>
 
-<div class="card">
-<h2>Login</h2>
+<!-- LOGIN SEMPLICE -->
+<div class="card" id="loginBox">
+<h2>Accedi</h2>
 
-<input id="user" placeholder="andrea / matteo">
-<input id="pass" type="password" placeholder="password (qualsiasi)">
-<button id="loginBtn">Accedi</button>
+<input id="user" placeholder="Scrivi: andrea oppure matteo">
+<button onclick="login()">Entra</button>
 </div>
 
+<!-- APP -->
 <div id="app"></div>
 
+<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
-/* SUPABASE */
 const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY25mZ21xcndoZHd5eWxmZWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNTUyNjUsImV4cCI6MjA5NzkzMTI2NX0.EvEJjK40eQZ117n1gS5-zIeNiHcuTkpyT8W4i5EwyKQ";
 
@@ -61,22 +65,24 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentUser = "";
 
-/* LOGIN (EVENT LISTENER, NON onclick) */
-document.getElementById("loginBtn").addEventListener("click", () => {
+/* LOGIN SEMPLIFICATO */
+function login(){
 
-const u = document.getElementById("user").value.trim();
+const u = document.getElementById("user").value.trim().toLowerCase();
 
 if(u !== "andrea" && u !== "matteo"){
-document.getElementById("app").innerHTML = "<p>Utente non valido</p>";
+alert("Scrivi andrea o matteo");
 return;
 }
 
 currentUser = u;
 
+document.getElementById("loginBox").style.display = "none";
+
 if(u === "andrea") renderAndrea();
 if(u === "matteo") renderMatteo();
 
-});
+}
 
 /* ANDREA */
 function renderAndrea(){
@@ -118,7 +124,7 @@ document.getElementById("app").innerHTML = `
 `;
 }
 
-/* SALVA */
+/* SALVATAGGIO SUPABASE */
 async function salva(){
 
 const contenuto = document.getElementById("contenuto").value;
