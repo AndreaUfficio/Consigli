@@ -34,6 +34,14 @@ button{
 }
 
 h1{text-align:center;}
+
+.small{
+    font-size: 14px;
+    background: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
 </style>
 </head>
 
@@ -45,51 +53,89 @@ h1{text-align:center;}
 <div class="card" id="loginBox">
 <h2>Login</h2>
 
-<input id="user" placeholder="scrivi andrea o matteo">
-<button onclick="login()">Entra</button>
+<input id="user" placeholder="scrivi: andrea o matteo">
+<button onclick="handleLogin()">Entra</button>
 </div>
 
 <div id="app"></div>
 
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 
-/* ===== SUPABASE ===== */
-const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY25mZ21xcndoZHd5eWxmZWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNTUyNjUsImV4cCI6MjA5NzkzMTI2NX0.EvEJjK40eQZ117n1gS5-zIeNiHcuTkpyT8W4i5EwyKQ";
-
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-/* ===== LOGIN ===== */
 let currentUser = "";
 
-function login(){
+/* LOGIN */
+function handleLogin(){
 
-const u = document.getElementById("user").value.trim().toLowerCase();
+const user = document.getElementById("user").value.trim().toLowerCase();
 
-if(u !== "andrea" && u !== "matteo"){
+if(user !== "andrea" && user !== "matteo"){
 alert("Scrivi andrea o matteo");
 return;
 }
 
-currentUser = u;
+currentUser = user;
 
 document.getElementById("loginBox").style.display = "none";
 
-if(u === "andrea") renderAndrea();
-if(u === "matteo") renderMatteo();
+if(user === "andrea") showAndrea();
+if(user === "matteo") showMatteo();
+
+loadData();
 
 }
 
-/* ===== ANDREA ===== */
-function renderAndrea(){
+/* SALVATAGGIO */
+function save(){
+
+let data = JSON.parse(localStorage.getItem(currentUser)) || [];
+
+let contenuto = document.getElementById("contenuto").value;
+let commento = document.getElementById("commento").value;
+let voto = document.getElementById("voto").value;
+
+data.push({
+contenuto,
+commento,
+voto,
+date: new Date().toLocaleString()
+});
+
+localStorage.setItem(currentUser, JSON.stringify(data));
+
+loadData();
+
+alert("Salvato!");
+}
+
+/* CARICA STORICO */
+function loadData(){
+
+let data = JSON.parse(localStorage.getItem(currentUser)) || [];
+
+let html = "<h3>Storico</h3>";
+
+data.reverse().forEach(d => {
+html += `
+<div class="small">
+<b>${d.contenuto}</b><br>
+${d.commento}<br>
+Voto: ${d.voto}<br>
+<small>${d.date}</small>
+</div>
+`;
+});
+
+document.getElementById("history").innerHTML = html;
+}
+
+/* ANDREA */
+function showAndrea(){
+
 document.getElementById("app").innerHTML = `
 <div class="card">
 <h2>Andrea</h2>
 
-<label>Album della settimana</label>
+<label>Album da consigliare</label>
 <input id="contenuto">
 
 <label>Commento film Matteo</label>
@@ -98,18 +144,24 @@ document.getElementById("app").innerHTML = `
 <label>Voto film (0-5)</label>
 <input id="voto" type="number" min="0" max="5">
 
-<button onclick="salva()">Salva</button>
+<button onclick="save()">Salva</button>
+</div>
+
+<div class="card">
+<h3>Archivio Andrea</h3>
+<div id="history"></div>
 </div>
 `;
 }
 
-/* ===== MATTEO ===== */
-function renderMatteo(){
+/* MATTEO */
+function showMatteo(){
+
 document.getElementById("app").innerHTML = `
 <div class="card">
 <h2>Matteo</h2>
 
-<label>Film della settimana</label>
+<label>Film da consigliare</label>
 <input id="contenuto">
 
 <label>Commento album Andrea</label>
@@ -118,37 +170,14 @@ document.getElementById("app").innerHTML = `
 <label>Voto album (0-10)</label>
 <input id="voto" type="number" min="0" max="10">
 
-<button onclick="salva()">Salva</button>
+<button onclick="save()">Salva</button>
+</div>
+
+<div class="card">
+<h3>Archivio Matteo</h3>
+<div id="history"></div>
 </div>
 `;
-}
-
-/* ===== SALVATAGGIO ===== */
-async function salva(){
-
-const contenuto = document.getElementById("contenuto").value;
-const commento = document.getElementById("commento").value;
-const voto = document.getElementById("voto").value;
-
-const tipo = currentUser === "andrea" ? "album" : "film";
-
-const { error } = await supabase
-.from("consigli")
-.insert([{
-user: currentUser,
-tipo: tipo,
-contenuto: contenuto,
-commento: commento,
-voto: voto
-}]);
-
-if(error){
-alert("Errore salvataggio");
-console.log(error);
-}else{
-alert("Salvato!");
-}
-
 }
 
 </script>
