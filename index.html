@@ -54,17 +54,17 @@ h1{text-align:center;}
 <h2>Login</h2>
 
 <input id="user" placeholder="scrivi: andrea o matteo">
-<button id="loginBtn">Entra</button>
+<button onclick="handleLogin()">Entra</button>
 </div>
 
 <div id="app"></div>
 
-<!-- SUPABASE LIB -->
+<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
-/* ===== SUPABASE INIT (FIX STABILE) ===== */
+/* ===== SUPABASE ===== */
 const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
 const supabaseKey = "INCOLLA_LA_TUA_API_KEY_QUI";
 
@@ -73,8 +73,8 @@ const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 /* ===== STATE ===== */
 let currentUser = "";
 
-/* ===== LOGIN (FIX DEFINITIVO) ===== */
-function handleLogin(){
+/* ===== LOGIN (FORZATO GLOBALE) ===== */
+window.handleLogin = function(){
 
 const user = document.getElementById("user").value.trim().toLowerCase();
 
@@ -92,11 +92,6 @@ if(user === "matteo") showMatteo();
 
 loadData();
 }
-
-/* collega bottone in modo sicuro */
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("loginBtn").addEventListener("click", handleLogin);
-});
 
 /* ===== SAVE ===== */
 async function save(){
