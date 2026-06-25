@@ -2,35 +2,203 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>TEST LOGIN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONSIGLI</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background: #f4f4f4;
+}
+
+.card{
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+input, textarea{
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+button{
+    padding: 10px;
+    cursor: pointer;
+}
+
+h1{text-align:center;}
+table{
+    width:100%;
+    background:white;
+    border-collapse: collapse;
+}
+td, th{
+    border:1px solid #ddd;
+    padding:8px;
+}
+</style>
 </head>
 
 <body>
 
-<h2>TEST LOGIN</h2>
+<h1>CONSIGLI</h1>
 
-<input id="user" placeholder="scrivi andrea o matteo">
-<button onclick="login()">ENTRA</button>
+<!-- LOGIN -->
+<div class="card" id="loginBox">
+<h2>Login</h2>
+<input id="user" placeholder="andrea o matteo">
+<button onclick="login()">Entra</button>
+</div>
 
-<div id="out"></div>
+<div id="app"></div>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
+const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY25mZ21xcndoZHd5eWxmZWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNTUyNjUsImV4cCI6MjA5NzkzMTI2NX0.EvEJjK40eQZ117n1gS5-zIeNiHcuTkpyT8W4i5EwyKQ";
+
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+let currentUser = "";
+
+/* LOGIN */
 function login(){
-    const u = document.getElementById("user").value.trim().toLowerCase();
 
-    document.getElementById("out").innerHTML =
-        "Hai scritto: " + u;
+const u = document.getElementById("user").value.trim().toLowerCase();
 
-    if(u === "andrea"){
-        document.getElementById("out").innerHTML += "<br>ACCESSO ANDREA OK";
-    }
-    else if(u === "matteo"){
-        document.getElementById("out").innerHTML += "<br>ACCESSO MATTEO OK";
-    }
-    else{
-        document.getElementById("out").innerHTML += "<br>UTENTE NON VALIDO";
-    }
+if(u !== "andrea" && u !== "matteo"){
+alert("Scrivi andrea o matteo");
+return;
+}
+
+currentUser = u;
+
+document.getElementById("loginBox").style.display = "none";
+
+if(u === "andrea") renderAndrea();
+if(u === "matteo") renderMatteo();
+
+loadHistory();
+}
+
+/* ANDREA */
+function renderAndrea(){
+document.getElementById("app").innerHTML = `
+<div class="card">
+<h2>Andrea</h2>
+
+<label>Album per Matteo</label>
+<input id="contenuto">
+
+<label>Commento film Matteo</label>
+<textarea id="commento"></textarea>
+
+<label>Voto film (0-5)</label>
+<input id="voto" type="number" min="0" max="5">
+
+<button onclick="salva()">Salva</button>
+</div>
+
+<div class="card">
+<h3>Archivio</h3>
+<div id="history"></div>
+</div>
+`;
+}
+
+/* MATTEO */
+function renderMatteo(){
+document.getElementById("app").innerHTML = `
+<div class="card">
+<h2>Matteo</h2>
+
+<label>Film per Andrea</label>
+<input id="contenuto">
+
+<label>Commento album Andrea</label>
+<textarea id="commento"></textarea>
+
+<label>Voto album (0-10)</label>
+<input id="voto" type="number" min="0" max="10">
+
+<button onclick="salva()">Salva</button>
+</div>
+
+<div class="card">
+<h3>Archivio</h3>
+<div id="history"></div>
+</div>
+`;
+}
+
+/* SALVA */
+async function salva(){
+
+const contenuto = document.getElementById("contenuto").value;
+const commento = document.getElementById("commento").value;
+const voto = document.getElementById("voto").value;
+
+const tipo = currentUser === "andrea" ? "album" : "film";
+
+const { error } = await supabase
+.from("consigli")
+.insert([{
+user: currentUser,
+tipo: tipo,
+contenuto: contenuto,
+commento: commento,
+voto: voto
+}]);
+
+if(error){
+alert("Errore salvataggio");
+console.log(error);
+return;
+}
+
+alert("Salvato!");
+loadHistory();
+}
+
+/* CARICA STORICO */
+async function loadHistory(){
+
+const { data, error } = await supabase
+.from("consigli")
+.select("*")
+.eq("user", currentUser)
+.order("id", { ascending: false });
+
+if(error){
+console.log(error);
+return;
+}
+
+let html = "<table><tr><th>Tipo</th><th>Contenuto</th><th>Voto</th><th>Commento</th></tr>";
+
+data.forEach(r => {
+html += `
+<tr>
+<td>${r.tipo}</td>
+<td>${r.contenuto}</td>
+<td>${r.voto}</td>
+<td>${r.commento}</td>
+</tr>
+`;
+});
+
+html += "</table>";
+
+document.getElementById("history").innerHTML = html;
 }
 
 </script>
