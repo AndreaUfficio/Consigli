@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONSIGLI</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    max-width:800px;
+    margin:auto;
+    padding:20px;
+    background:#f4f4f4;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+
+input, textarea, select{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    margin-bottom:15px;
+    box-sizing:border-box;
+}
+
+button{
+    padding:10px 20px;
+}
+
+h1{
+    text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<h1>CONSIGLI</h1>
+
+<p style="text-align:center">
+Sito creato per consigliare film e album
+</p>
+
+<div class="card">
+
+<h2>Login</h2>
+
+<label>Utente</label>
+<input id="user">
+
+<label>Password</label>
+<input id="password" type="password">
+
+<button onclick="login()">Accedi</button>
+
+</div>
+
+<div id="area"></div>
+
+<script>
+
+function login(){
+
+const user=document.getElementById("user").value;
+
+let html="";
+
+if(user==="andrea"){
+
+html=`
+<div class="card">
+<h2>Area Andrea</h2>
+
+<label>Album della settimana per Matteo</label>
+<input>
+
+<label>Commenti sul film consigliato da Matteo</label>
+<textarea></textarea>
+
+<label>Valutazione film (0-5)</label>
+<select>
+<option>0</option>
+<option>1</option>
+<option>2</option>
+<option>3</option>
+<option>4</option>
+<option>5</option>
+</select>
+
+<button>Salva</button>
+</div>
+`;
+}
+
+else if(user==="matteo"){
+
+html=`
+<div class="card">
+<h2>Area Matteo</h2>
+
+<label>Film della settimana per Andrea</label>
+<input>
+
+<label>Commenti sull'album consigliato da Andrea</label>
+<textarea></textarea>
+
+<label>Valutazione album (0-10)</label>
+<input type="number" min="0" max="10">
+
+<button>Salva</button>
+</div>
+`;
+}
+
+else{
+html="<p>Utente non riconosciuto</p>";
+}
+
+document.getElementById("area").innerHTML=html;
+
+}
+
+</script>
+
+</body>
+</html>
