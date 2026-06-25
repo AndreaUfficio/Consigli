@@ -7,34 +7,35 @@
 
 <style>
 body{
-    font-family:Arial,sans-serif;
-    max-width:800px;
-    margin:auto;
-    padding:20px;
-    background:#f4f4f4;
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background: #f4f4f4;
 }
 
 .card{
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
 }
 
 input, textarea, select{
-    width:100%;
-    padding:10px;
-    margin-top:5px;
-    margin-bottom:15px;
-    box-sizing:border-box;
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
 }
 
 button{
-    padding:10px 20px;
+    padding: 10px 20px;
+    cursor: pointer;
 }
 
 h1{
-    text-align:center;
+    text-align: center;
 }
 </style>
 </head>
@@ -42,13 +43,9 @@ h1{
 <body>
 
 <h1>CONSIGLI</h1>
-
-<p style="text-align:center">
-Sito creato per consigliare film e album
-</p>
+<p style="text-align:center">Sito creato per consigliare film e album</p>
 
 <div class="card">
-
 <h2>Login</h2>
 
 <label>Utente</label>
@@ -58,74 +55,115 @@ Sito creato per consigliare film e album
 <input id="password" type="password">
 
 <button onclick="login()">Accedi</button>
-
 </div>
 
 <div id="area"></div>
 
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY25mZ21xcndoZHd5eWxmZWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNTUyNjUsImV4cCI6MjA5NzkzMTI2NX0.EvEJjK40eQZ117n1gS5-zIeNiHcuTkpyT8W4i5EwyKQ";
 
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+// LOGIN FINTA SEMPLICE
 function login(){
+    const user = document.getElementById("user").value;
 
-const user=document.getElementById("user").value;
+    let html = "";
 
-let html="";
+    if(user === "andrea"){
+        html = `
+        <div class="card">
+        <h2>Area Andrea</h2>
 
-if(user==="andrea"){
+        <label>Album della settimana per Matteo</label>
+        <input id="album">
 
-html=`
-<div class="card">
-<h2>Area Andrea</h2>
+        <label>Commenti sul film di Matteo</label>
+        <textarea id="commento"></textarea>
 
-<label>Album della settimana per Matteo</label>
-<input>
+        <label>Valutazione film (0-5)</label>
+        <select id="voto">
+        <option>0</option>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        </select>
 
-<label>Commenti sul film consigliato da Matteo</label>
-<textarea></textarea>
+        <button onclick="salva('andrea','album')">Salva</button>
+        </div>
+        `;
+    }
 
-<label>Valutazione film (0-5)</label>
-<select>
-<option>0</option>
-<option>1</option>
-<option>2</option>
-<option>3</option>
-<option>4</option>
-<option>5</option>
-</select>
+    else if(user === "matteo"){
+        html = `
+        <div class="card">
+        <h2>Area Matteo</h2>
 
-<button>Salva</button>
-</div>
-`;
+        <label>Film della settimana per Andrea</label>
+        <input id="film">
+
+        <label>Commenti sull'album di Andrea</label>
+        <textarea id="commento"></textarea>
+
+        <label>Valutazione album (0-10)</label>
+        <input id="voto" type="number" min="0" max="10">
+
+        <button onclick="salva('matteo','film')">Salva</button>
+        </div>
+        `;
+    }
+
+    else{
+        html = "<p>Utente non riconosciuto</p>";
+    }
+
+    document.getElementById("area").innerHTML = html;
 }
 
-else if(user==="matteo"){
+// SALVATAGGIO SUPABASE
+async function salva(user, tipo){
 
-html=`
-<div class="card">
-<h2>Area Matteo</h2>
+    let contenuto = "";
+    let commento = "";
+    let voto = "";
 
-<label>Film della settimana per Andrea</label>
-<input>
+    if(user === "andrea"){
+        contenuto = document.getElementById("album").value;
+        commento = document.getElementById("commento").value;
+        voto = document.getElementById("voto").value;
+    }
 
-<label>Commenti sull'album consigliato da Andrea</label>
-<textarea></textarea>
+    if(user === "matteo"){
+        contenuto = document.getElementById("film").value;
+        commento = document.getElementById("commento").value;
+        voto = document.getElementById("voto").value;
+    }
 
-<label>Valutazione album (0-10)</label>
-<input type="number" min="0" max="10">
+    const { error } = await supabase
+        .from("consigli")
+        .insert([
+            {
+                user: user,
+                tipo: tipo,
+                contenuto: contenuto,
+                commento: commento,
+                voto: voto
+            }
+        ]);
 
-<button>Salva</button>
-</div>
-`;
+    if(error){
+        alert("Errore salvataggio");
+        console.log(error);
+    } else {
+        alert("Salvato con successo!");
+    }
 }
-
-else{
-html="<p>Utente non riconosciuto</p>";
-}
-
-document.getElementById("area").innerHTML=html;
-
-}
-
 </script>
 
 </body>
