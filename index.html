@@ -59,21 +59,25 @@ h1{text-align:center;}
 
 <div id="app"></div>
 
-<!-- SUPABASE -->
+<!-- SUPABASE LIB -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
-/* ===== SUPABASE (SOLO AGGIUNTA) ===== */
+/* ===== SUPABASE INIT (FIXED) ===== */
+let supabase;
+
 const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY25mZ21xcndoZHd5eWxmZWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNTUyNjUsImV4cCI6MjA5NzkzMTI2NX0.EvEJjK40eQZ117n1gS5-zIeNiHcuTkpyT8W4i5EwyKQ";
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+window.addEventListener("DOMContentLoaded", () => {
+    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+});
 
-/* ===== LOGIN (INVARIATO) ===== */
+/* ===== LOGIN (FIX SCOPING) ===== */
 let currentUser = "";
 
-function handleLogin(){
+window.handleLogin = function(){
 
 const user = document.getElementById("user").value.trim().toLowerCase();
 
@@ -92,7 +96,7 @@ if(user === "matteo") showMatteo();
 loadData();
 }
 
-/* ===== SAVE (MODIFICATO SOLO QUI) ===== */
+/* ===== SAVE ===== */
 async function save(){
 
 let contenuto = document.getElementById("contenuto").value;
@@ -113,7 +117,7 @@ loadData();
 alert("Salvato!");
 }
 
-/* ===== LOAD (MODIFICATO SOLO QUI) ===== */
+/* ===== LOAD ===== */
 async function loadData(){
 
 const { data } = await supabase
@@ -140,7 +144,7 @@ Voto: ${d.voto}<br>
 document.getElementById("history").innerHTML = html;
 }
 
-/* ===== ANDREA (INVARIATO) ===== */
+/* ===== ANDREA ===== */
 function showAndrea(){
 
 document.getElementById("app").innerHTML = `
@@ -178,7 +182,7 @@ document.getElementById("app").innerHTML = `
 `;
 }
 
-/* ===== MATTEO (INVARIATO) ===== */
+/* ===== MATTEO ===== */
 function showMatteo(){
 
 document.getElementById("app").innerHTML = `
