@@ -25,6 +25,7 @@ input, textarea{
     width: 100%;
     padding: 10px;
     margin: 10px 0;
+    box-sizing: border-box;
 }
 
 button{
@@ -33,15 +34,6 @@ button{
 }
 
 h1{text-align:center;}
-table{
-    width:100%;
-    background:white;
-    border-collapse: collapse;
-}
-td, th{
-    border:1px solid #ddd;
-    padding:8px;
-}
 </style>
 </head>
 
@@ -52,42 +44,36 @@ td, th{
 <!-- LOGIN -->
 <div class="card" id="loginBox">
 <h2>Login</h2>
-<input id="user" placeholder="andrea o matteo">
+
+<input id="user" placeholder="Scrivi: andrea o matteo">
 <button onclick="login()">Entra</button>
 </div>
 
+<!-- APP -->
 <div id="app"></div>
-
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
-const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY25mZ21xcndoZHd5eWxmZWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNTUyNjUsImV4cCI6MjA5NzkzMTI2NX0.EvEJjK40eQZ117n1gS5-zIeNiHcuTkpyT8W4i5EwyKQ";
-
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-let currentUser = "";
-
-/* LOGIN */
+/* LOGIN SEMPLICE */
 function login(){
 
-const u = document.getElementById("user").value.trim().toLowerCase();
+const user = document.getElementById("user").value.trim().toLowerCase();
 
-if(u !== "andrea" && u !== "matteo"){
-alert("Scrivi andrea o matteo");
+if(user !== "andrea" && user !== "matteo"){
+alert("Scrivi solo andrea o matteo");
 return;
 }
 
-currentUser = u;
-
 document.getElementById("loginBox").style.display = "none";
 
-if(u === "andrea") renderAndrea();
-if(u === "matteo") renderMatteo();
+if(user === "andrea"){
+renderAndrea();
+}
 
-loadHistory();
+if(user === "matteo"){
+renderMatteo();
+}
+
 }
 
 /* ANDREA */
@@ -96,21 +82,18 @@ document.getElementById("app").innerHTML = `
 <div class="card">
 <h2>Andrea</h2>
 
-<label>Album per Matteo</label>
-<input id="contenuto">
+<p>👉 Qui vedrai e gestirai i consigli per Matteo</p>
 
-<label>Commento film Matteo</label>
-<textarea id="commento"></textarea>
+<label>Album della settimana</label>
+<input>
+
+<label>Commento film di Matteo</label>
+<textarea></textarea>
 
 <label>Voto film (0-5)</label>
-<input id="voto" type="number" min="0" max="5">
+<input type="number" min="0" max="5">
 
-<button onclick="salva()">Salva</button>
-</div>
-
-<div class="card">
-<h3>Archivio</h3>
-<div id="history"></div>
+<button onclick="alert('Salvataggio ancora non attivo')">Salva</button>
 </div>
 `;
 }
@@ -121,84 +104,20 @@ document.getElementById("app").innerHTML = `
 <div class="card">
 <h2>Matteo</h2>
 
-<label>Film per Andrea</label>
-<input id="contenuto">
+<p>👉 Qui vedrai e gestirai i consigli per Andrea</p>
 
-<label>Commento album Andrea</label>
-<textarea id="commento"></textarea>
+<label>Film della settimana</label>
+<input>
+
+<label>Commento album di Andrea</label>
+<textarea></textarea>
 
 <label>Voto album (0-10)</label>
-<input id="voto" type="number" min="0" max="10">
+<input type="number" min="0" max="10">
 
-<button onclick="salva()">Salva</button>
-</div>
-
-<div class="card">
-<h3>Archivio</h3>
-<div id="history"></div>
+<button onclick="alert('Salvataggio ancora non attivo')">Salva</button>
 </div>
 `;
-}
-
-/* SALVA */
-async function salva(){
-
-const contenuto = document.getElementById("contenuto").value;
-const commento = document.getElementById("commento").value;
-const voto = document.getElementById("voto").value;
-
-const tipo = currentUser === "andrea" ? "album" : "film";
-
-const { error } = await supabase
-.from("consigli")
-.insert([{
-user: currentUser,
-tipo: tipo,
-contenuto: contenuto,
-commento: commento,
-voto: voto
-}]);
-
-if(error){
-alert("Errore salvataggio");
-console.log(error);
-return;
-}
-
-alert("Salvato!");
-loadHistory();
-}
-
-/* CARICA STORICO */
-async function loadHistory(){
-
-const { data, error } = await supabase
-.from("consigli")
-.select("*")
-.eq("user", currentUser)
-.order("id", { ascending: false });
-
-if(error){
-console.log(error);
-return;
-}
-
-let html = "<table><tr><th>Tipo</th><th>Contenuto</th><th>Voto</th><th>Commento</th></tr>";
-
-data.forEach(r => {
-html += `
-<tr>
-<td>${r.tipo}</td>
-<td>${r.contenuto}</td>
-<td>${r.voto}</td>
-<td>${r.commento}</td>
-</tr>
-`;
-});
-
-html += "</table>";
-
-document.getElementById("history").innerHTML = html;
 }
 
 </script>
