@@ -21,43 +21,37 @@ body{
     margin-bottom: 20px;
 }
 
-input, textarea, select{
+input, textarea{
     width: 100%;
     padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 15px;
+    margin: 10px 0;
     box-sizing: border-box;
 }
 
 button{
-    padding: 10px 20px;
+    padding: 10px;
     cursor: pointer;
 }
 
-h1{
-    text-align: center;
-}
+h1{text-align:center;}
 </style>
 </head>
 
 <body>
 
 <h1>CONSIGLI</h1>
-<p style="text-align:center">Sito creato per consigliare film e album</p>
+<p style="text-align:center">Film e Album tra Andrea e Matteo</p>
 
+<!-- LOGIN -->
 <div class="card">
 <h2>Login</h2>
 
-<label>Utente</label>
-<input id="user">
-
-<label>Password</label>
-<input id="password" type="password">
-
+<input id="user" placeholder="andrea / matteo">
+<input id="pass" type="password" placeholder="password (qualsiasi cosa)">
 <button onclick="login()">Accedi</button>
 </div>
 
-<div id="area"></div>
+<div id="app"></div>
 
 <!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -68,101 +62,93 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// LOGIN FINTA SEMPLICE
+let currentUser = "";
+
+/* LOGIN */
 function login(){
-    const user = document.getElementById("user").value;
+    const u = document.getElementById("user").value;
 
-    let html = "";
-
-    if(user === "andrea"){
-        html = `
-        <div class="card">
-        <h2>Area Andrea</h2>
-
-        <label>Album della settimana per Matteo</label>
-        <input id="album">
-
-        <label>Commenti sul film di Matteo</label>
-        <textarea id="commento"></textarea>
-
-        <label>Valutazione film (0-5)</label>
-        <select id="voto">
-        <option>0</option>
-        <option>1</option>
-        <option>2</option>
-        <option>3</option>
-        <option>4</option>
-        <option>5</option>
-        </select>
-
-        <button onclick="salva('andrea','album')">Salva</button>
-        </div>
-        `;
+    if(u !== "andrea" && u !== "matteo"){
+        document.getElementById("app").innerHTML = "<p>Utente non valido</p>";
+        return;
     }
 
-    else if(user === "matteo"){
-        html = `
-        <div class="card">
-        <h2>Area Matteo</h2>
+    currentUser = u;
 
-        <label>Film della settimana per Andrea</label>
-        <input id="film">
-
-        <label>Commenti sull'album di Andrea</label>
-        <textarea id="commento"></textarea>
-
-        <label>Valutazione album (0-10)</label>
-        <input id="voto" type="number" min="0" max="10">
-
-        <button onclick="salva('matteo','film')">Salva</button>
-        </div>
-        `;
+    if(u === "andrea"){
+        renderAndrea();
+    } else {
+        renderMatteo();
     }
-
-    else{
-        html = "<p>Utente non riconosciuto</p>";
-    }
-
-    document.getElementById("area").innerHTML = html;
 }
 
-// SALVATAGGIO SUPABASE
-async function salva(user, tipo){
+/* ANDREA */
+function renderAndrea(){
+document.getElementById("app").innerHTML = `
+<div class="card">
+<h2>Andrea</h2>
 
-    let contenuto = "";
-    let commento = "";
-    let voto = "";
+<label>Album per Matteo</label>
+<input id="contenuto">
 
-    if(user === "andrea"){
-        contenuto = document.getElementById("album").value;
-        commento = document.getElementById("commento").value;
-        voto = document.getElementById("voto").value;
-    }
+<label>Commento film Matteo</label>
+<textarea id="commento"></textarea>
 
-    if(user === "matteo"){
-        contenuto = document.getElementById("film").value;
-        commento = document.getElementById("commento").value;
-        voto = document.getElementById("voto").value;
-    }
+<label>Voto film (0-5)</label>
+<input id="voto" type="number" min="0" max="5">
 
-    const { error } = await supabase
-        .from("consigli")
-        .insert([
-            {
-                user: user,
-                tipo: tipo,
-                contenuto: contenuto,
-                commento: commento,
-                voto: voto
-            }
-        ]);
+<button onclick="salva()">Salva</button>
+</div>
+`;
+}
 
-    if(error){
-        alert("Errore salvataggio");
-        console.log(error);
-    } else {
-        alert("Salvato con successo!");
-    }
+/* MATTEO */
+function renderMatteo(){
+document.getElementById("app").innerHTML = `
+<div class="card">
+<h2>Matteo</h2>
+
+<label>Film per Andrea</label>
+<input id="contenuto">
+
+<label>Commento album Andrea</label>
+<textarea id="commento"></textarea>
+
+<label>Voto album (0-10)</label>
+<input id="voto" type="number" min="0" max="10">
+
+<button onclick="salva()">Salva</button>
+</div>
+`;
+}
+
+/* SALVATAGGIO */
+async function salva(){
+
+let tipo = currentUser === "andrea" ? "album" : "film";
+
+const contenuto = document.getElementById("contenuto").value;
+const commento = document.getElementById("commento").value;
+const voto = document.getElementById("voto").value;
+
+const { error } = await supabase
+.from("consigli")
+.insert([
+{
+user: currentUser,
+tipo: tipo,
+contenuto: contenuto,
+commento: commento,
+voto: voto
+}
+]);
+
+if(error){
+alert("Errore salvataggio");
+console.log(error);
+} else {
+alert("Salvato!");
+}
 }
 </script>
 
