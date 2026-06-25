@@ -54,7 +54,7 @@ h1{text-align:center;}
 <h2>Login</h2>
 
 <input id="user" placeholder="scrivi: andrea o matteo">
-<button onclick="handleLogin()">Entra</button>
+<button id="loginBtn">Entra</button>
 </div>
 
 <div id="app"></div>
@@ -64,20 +64,17 @@ h1{text-align:center;}
 
 <script>
 
-/* ===== SUPABASE INIT (FIXED) ===== */
-let supabase;
-
+/* ===== SUPABASE INIT (FIX STABILE) ===== */
 const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY25mZ21xcndoZHd5eWxmZWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNTUyNjUsImV4cCI6MjA5NzkzMTI2NX0.EvEJjK40eQZ117n1gS5-zIeNiHcuTkpyT8W4i5EwyKQ";
+const supabaseKey = "INCOLLA_LA_TUA_API_KEY_QUI";
 
-window.addEventListener("DOMContentLoaded", () => {
-    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-});
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-/* ===== LOGIN (FIX SCOPING) ===== */
+/* ===== STATE ===== */
 let currentUser = "";
 
-window.handleLogin = function(){
+/* ===== LOGIN (FIX DEFINITIVO) ===== */
+function handleLogin(){
 
 const user = document.getElementById("user").value.trim().toLowerCase();
 
@@ -95,6 +92,11 @@ if(user === "matteo") showMatteo();
 
 loadData();
 }
+
+/* collega bottone in modo sicuro */
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("loginBtn").addEventListener("click", handleLogin);
+});
 
 /* ===== SAVE ===== */
 async function save(){
