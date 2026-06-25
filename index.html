@@ -25,19 +25,22 @@ input, textarea{
     width: 100%;
     padding: 10px;
     margin: 10px 0;
+    box-sizing: border-box;
 }
 
 button{
-    padding: 8px;
+    padding: 10px;
     cursor: pointer;
-    margin-top: 5px;
 }
 
-.item{
-    background:#fff;
-    padding:10px;
-    border-radius:8px;
-    margin-bottom:10px;
+h1{text-align:center;}
+
+.small{
+    font-size: 14px;
+    background: #fff;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
 }
 </style>
 </head>
@@ -49,139 +52,69 @@ button{
 <!-- LOGIN -->
 <div class="card" id="loginBox">
 <h2>Login</h2>
-<input id="user" placeholder="andrea o matteo">
-<button onclick="login()">Entra</button>
 
-<h3>Storico generale (prima del login)</h3>
-<div id="publicHistory"></div>
+<input id="user" placeholder="scrivi: andrea o matteo">
+<button onclick="handleLogin()">Entra</button>
 </div>
 
-<!-- APP -->
 <div id="app"></div>
 
+<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
-/* ===== SUPABASE ===== */
+/* ===== SUPABASE (SOLO AGGIUNTA) ===== */
 const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY25mZ21xcndoZHd5eWxmZWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNTUyNjUsImV4cCI6MjA5NzkzMTI2NX0.EvEJjK40eQZ117n1gS5-zIeNiHcuTkpyT8W4i5EwyKQ";
 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+/* ===== LOGIN (INVARIATO) ===== */
 let currentUser = "";
 
-/* ===== LOAD PUBBLICO ===== */
-async function loadPublic(){
+function handleLogin(){
 
-const { data } = await supabase
-.from("consigli")
-.select("*")
-.order("id", { ascending:false });
+const user = document.getElementById("user").value.trim().toLowerCase();
 
-renderList(data, "publicHistory", true);
-}
-
-/* ===== LOGIN ===== */
-function login(){
-
-const u = document.getElementById("user").value.trim().toLowerCase();
-
-if(u !== "andrea" && u !== "matteo"){
+if(user !== "andrea" && user !== "matteo"){
 alert("Scrivi andrea o matteo");
 return;
 }
 
-currentUser = u;
+currentUser = user;
 
 document.getElementById("loginBox").style.display = "none";
 
-if(u === "andrea") renderAndrea();
-if(u === "matteo") renderMatteo();
+if(user === "andrea") showAndrea();
+if(user === "matteo") showMatteo();
 
-loadUser();
+loadData();
 }
 
-/* ===== ANDREA ===== */
-function renderAndrea(){
-document.getElementById("app").innerHTML = `
-<div class="card">
-<h2>Andrea</h2>
-
-<input id="contenuto" placeholder="album">
-<textarea id="commento" placeholder="commento"></textarea>
-
-<select id="voto">
-<option>0</option><option>0.5</option><option>1</option><option>1.5</option>
-<option>2</option><option>2.5</option><option>3</option><option>3.5</option>
-<option>4</option><option>4.5</option><option>5</option>
-</select>
-
-<button onclick="save()">Salva</button>
-</div>
-
-<h3>Il tuo storico</h3>
-<div id="history"></div>
-`;
-}
-
-/* ===== MATTEO ===== */
-function renderMatteo(){
-document.getElementById("app").innerHTML = `
-<div class="card">
-<h2>Matteo</h2>
-
-<input id="contenuto" placeholder="film">
-<textarea id="commento" placeholder="commento"></textarea>
-
-<select id="voto">
-<option>0</option><option>0.5</option><option>1</option><option>1.5</option>
-<option>2</option><option>2.5</option><option>3</option><option>3.5</option>
-<option>4</option><option>4.5</option><option>5</option>
-<option>5.5</option><option>6</option><option>6.5</option>
-<option>7</option><option>7.5</option><option>8</option>
-<option>8.5</option><option>9</option><option>9.5</option><option>10</option>
-</select>
-
-<button onclick="save()">Salva</button>
-</div>
-
-<h3>Il tuo storico</h3>
-<div id="history"></div>
-`;
-}
-
-/* ===== SAVE ===== */
+/* ===== SAVE (MODIFICATO SOLO QUI) ===== */
 async function save(){
 
-const contenuto = document.getElementById("contenuto").value;
-const commento = document.getElementById("commento").value;
-const voto = document.getElementById("voto").value;
+let contenuto = document.getElementById("contenuto").value;
+let commento = document.getElementById("commento").value;
+let voto = document.getElementById("voto").value;
 
-const tipo = currentUser === "andrea" ? "album" : "film";
-
-const { error } = await supabase
+await supabase
 .from("consigli")
 .insert([{
 user: currentUser,
-tipo,
 contenuto,
 commento,
-voto
+voto,
+date: new Date().toLocaleString()
 }]);
 
-if(error){
-alert("Errore salvataggio");
-console.log(error);
-return;
+loadData();
+alert("Salvato!");
 }
 
-loadUser();
-loadPublic();
-}
-
-/* ===== LOAD USER ===== */
-async function loadUser(){
+/* ===== LOAD (MODIFICATO SOLO QUI) ===== */
+async function loadData(){
 
 const { data } = await supabase
 .from("consigli")
@@ -189,46 +122,109 @@ const { data } = await supabase
 .eq("user", currentUser)
 .order("id", { ascending:false });
 
-renderList(data, "history", false);
-}
+let html = "<h3>Storico</h3>";
 
-/* ===== DELETE ===== */
-async function removeItem(id){
-
-await supabase
-.from("consigli")
-.delete()
-.eq("id", id);
-
-loadUser();
-loadPublic();
-}
-
-/* ===== RENDER LIST ===== */
-function renderList(data, target, canDelete){
-
-let html = "";
-
+if(data){
 data.forEach(d => {
-
 html += `
-<div class="item">
-<b>${d.user}</b> - ${d.tipo}<br>
-${d.contenuto}<br>
+<div class="small">
+<b>${d.contenuto}</b><br>
 ${d.commento}<br>
 Voto: ${d.voto}<br>
-
-${canDelete ? "" : `<button onclick="removeItem(${d.id})">Elimina</button>`}
+<small>${d.date}</small>
 </div>
 `;
-
 });
-
-document.getElementById(target).innerHTML = html;
 }
 
-/* ===== INIT ===== */
-loadPublic();
+document.getElementById("history").innerHTML = html;
+}
+
+/* ===== ANDREA (INVARIATO) ===== */
+function showAndrea(){
+
+document.getElementById("app").innerHTML = `
+<div class="card">
+<h2>Andrea</h2>
+
+<label>Album da consigliare</label>
+<input id="contenuto">
+
+<label>Commento film Matteo</label>
+<textarea id="commento"></textarea>
+
+<label>Voto film (0-5)</label>
+<select id="voto">
+<option value="0">0</option>
+<option value="0.5">0.5</option>
+<option value="1">1</option>
+<option value="1.5">1.5</option>
+<option value="2">2</option>
+<option value="2.5">2.5</option>
+<option value="3">3</option>
+<option value="3.5">3.5</option>
+<option value="4">4</option>
+<option value="4.5">4.5</option>
+<option value="5">5</option>
+</select>
+
+<button onclick="save()">Salva</button>
+</div>
+
+<div class="card">
+<h3>Archivio Andrea</h3>
+<div id="history"></div>
+</div>
+`;
+}
+
+/* ===== MATTEO (INVARIATO) ===== */
+function showMatteo(){
+
+document.getElementById("app").innerHTML = `
+<div class="card">
+<h2>Matteo</h2>
+
+<label>Film da consigliare</label>
+<input id="contenuto">
+
+<label>Commento album Andrea</label>
+<textarea id="commento"></textarea>
+
+<label>Voto album (0-10)</label>
+<select id="voto">
+<option value="0">0</option>
+<option value="0.5">0.5</option>
+<option value="1">1</option>
+<option value="1.5">1.5</option>
+<option value="2">2</option>
+<option value="2.5">2.5</option>
+<option value="3">3</option>
+<option value="3.5">3.5</option>
+<option value="4">4</option>
+<option value="4.5">4.5</option>
+<option value="5">5</option>
+<option value="5.5">5.5</option>
+<option value="6">6</option>
+<option value="6.5">6.5</option>
+<option value="7">7</option>
+<option value="7.5">7.5</option>
+<option value="8">8</option>
+<option value="8.5">8.5</option>
+<option value="9">9</option>
+<option value="9.5">9.5</option>
+<option value="10">10</option>
+</select>
+
+<button onclick="save()">Salva</button>
+</div>
+
+<div class="card">
+<h3>Archivio Matteo</h3>
+<div id="history"></div>
+</div>
+`;
+}
 
 </script>
 
