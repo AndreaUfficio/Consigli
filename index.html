@@ -45,79 +45,110 @@ h1{text-align:center;}
 <div class="card" id="loginBox">
 <h2>Login</h2>
 
-<input id="user" placeholder="Scrivi: andrea o matteo">
+<input id="user" placeholder="scrivi andrea o matteo">
 <button onclick="login()">Entra</button>
 </div>
 
-<!-- APP -->
 <div id="app"></div>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
-/* LOGIN SEMPLICE */
+/* ===== SUPABASE ===== */
+const supabaseUrl = "https://ldcnfgmqrwhdwyylfejx.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkY25mZ21xcndoZHd5eWxmZWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzNTUyNjUsImV4cCI6MjA5NzkzMTI2NX0.EvEJjK40eQZ117n1gS5-zIeNiHcuTkpyT8W4i5EwyKQ";
+
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+/* ===== LOGIN ===== */
+let currentUser = "";
+
 function login(){
 
-const user = document.getElementById("user").value.trim().toLowerCase();
+const u = document.getElementById("user").value.trim().toLowerCase();
 
-if(user !== "andrea" && user !== "matteo"){
-alert("Scrivi solo andrea o matteo");
+if(u !== "andrea" && u !== "matteo"){
+alert("Scrivi andrea o matteo");
 return;
 }
 
+currentUser = u;
+
 document.getElementById("loginBox").style.display = "none";
 
-if(user === "andrea"){
-renderAndrea();
-}
-
-if(user === "matteo"){
-renderMatteo();
-}
+if(u === "andrea") renderAndrea();
+if(u === "matteo") renderMatteo();
 
 }
 
-/* ANDREA */
+/* ===== ANDREA ===== */
 function renderAndrea(){
 document.getElementById("app").innerHTML = `
 <div class="card">
 <h2>Andrea</h2>
 
-<p>👉 Qui vedrai e gestirai i consigli per Matteo</p>
-
 <label>Album della settimana</label>
-<input>
+<input id="contenuto">
 
-<label>Commento film di Matteo</label>
-<textarea></textarea>
+<label>Commento film Matteo</label>
+<textarea id="commento"></textarea>
 
 <label>Voto film (0-5)</label>
-<input type="number" min="0" max="5">
+<input id="voto" type="number" min="0" max="5">
 
-<button onclick="alert('Salvataggio ancora non attivo')">Salva</button>
+<button onclick="salva()">Salva</button>
 </div>
 `;
 }
 
-/* MATTEO */
+/* ===== MATTEO ===== */
 function renderMatteo(){
 document.getElementById("app").innerHTML = `
 <div class="card">
 <h2>Matteo</h2>
 
-<p>👉 Qui vedrai e gestirai i consigli per Andrea</p>
-
 <label>Film della settimana</label>
-<input>
+<input id="contenuto">
 
-<label>Commento album di Andrea</label>
-<textarea></textarea>
+<label>Commento album Andrea</label>
+<textarea id="commento"></textarea>
 
 <label>Voto album (0-10)</label>
-<input type="number" min="0" max="10">
+<input id="voto" type="number" min="0" max="10">
 
-<button onclick="alert('Salvataggio ancora non attivo')">Salva</button>
+<button onclick="salva()">Salva</button>
 </div>
 `;
+}
+
+/* ===== SALVATAGGIO ===== */
+async function salva(){
+
+const contenuto = document.getElementById("contenuto").value;
+const commento = document.getElementById("commento").value;
+const voto = document.getElementById("voto").value;
+
+const tipo = currentUser === "andrea" ? "album" : "film";
+
+const { error } = await supabase
+.from("consigli")
+.insert([{
+user: currentUser,
+tipo: tipo,
+contenuto: contenuto,
+commento: commento,
+voto: voto
+}]);
+
+if(error){
+alert("Errore salvataggio");
+console.log(error);
+}else{
+alert("Salvato!");
+}
+
 }
 
 </script>
